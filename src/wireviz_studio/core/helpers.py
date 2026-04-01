@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Union
 
 awg_equiv_table = {
     "0.09": "28",
@@ -39,40 +39,40 @@ def expand(yaml_data):
     # - a singleton (normally str or int)
     # - a list of str or int
     # if str is of the format '#-#', it is treated as a range (inclusive) and expanded
-    output = []
+    expanded_values = []
     if not isinstance(yaml_data, list):
         yaml_data = [yaml_data]
-    for e in yaml_data:
-        e = str(e)
-        if "-" in e:
-            a, b = e.split("-", 1)
+    for raw_value in yaml_data:
+        value_text = str(raw_value)
+        if "-" in value_text:
+            range_start, range_end = value_text.split("-", 1)
             try:
-                a = int(a)
-                b = int(b)
-                if a < b:
-                    for x in range(a, b + 1):
-                        output.append(x)  # ascending range
-                elif a > b:
-                    for x in range(a, b - 1, -1):
-                        output.append(x)  # descending range
+                range_start = int(range_start)
+                range_end = int(range_end)
+                if range_start < range_end:
+                    for number in range(range_start, range_end + 1):
+                        expanded_values.append(number)  # ascending range
+                elif range_start > range_end:
+                    for number in range(range_start, range_end - 1, -1):
+                        expanded_values.append(number)  # descending range
                 else:  # a == b
-                    output.append(a)  # range of length 1
+                    expanded_values.append(range_start)  # range of length 1
             except:
                 # '-' was not a delimiter between two ints, pass e through unchanged
-                output.append(e)
+                expanded_values.append(value_text)
         else:
             try:
-                x = int(e)  # single int
+                parsed_value = int(value_text)  # single int
             except Exception:
-                x = e  # string
-            output.append(x)
-    return output
+                parsed_value = value_text  # string
+            expanded_values.append(parsed_value)
+    return expanded_values
 
 
 def get_single_key_and_value(d: dict):
-    k = list(d.keys())[0]
-    v = d[k]
-    return (k, v)
+    key_name = list(d.keys())[0]
+    value = d[key_name]
+    return (key_name, value)
 
 
 def int2tuple(inp):
@@ -91,13 +91,15 @@ def flatten2d(inp):
 
 
 def tuplelist2tsv(inp, header=None):
-    output = ""
+    tsv_output = ""
     if header is not None:
         inp.insert(0, header)
     inp = flatten2d(inp)
     for row in inp:
-        output = output + "\t".join(str(remove_links(item)) for item in row) + "\n"
-    return output
+        tsv_output = tsv_output + "\t".join(
+            str(remove_links(item)) for item in row
+        ) + "\n"
+    return tsv_output
 
 
 def remove_links(inp):
@@ -167,7 +169,7 @@ def aspect_ratio(image_src):
     return 1  # Assume 1:1 when unable to read actual image size
 
 
-def smart_file_resolve(filename: str, possible_paths: (str, List[str])) -> Path:
+def smart_file_resolve(filename: str, possible_paths: Union[str, List[str]]) -> Path:
     if not isinstance(possible_paths, List):
         possible_paths = [possible_paths]
     filename = Path(filename)
@@ -181,9 +183,9 @@ def smart_file_resolve(filename: str, possible_paths: (str, List[str])) -> Path:
             Path(path).resolve() for path in possible_paths if path is not None
         ]
         for possible_path in possible_paths:
-            resolved_path = (possible_path / filename).resolve()
-            if resolved_path.exists():
-                return resolved_path
+            candidate_path = (possible_path / filename).resolve()
+            if candidate_path.exists():
+                return candidate_path
         else:
             raise Exception(
                 f"{filename} was not found in any of the following locations: \n"

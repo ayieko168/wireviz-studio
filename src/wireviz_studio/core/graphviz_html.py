@@ -3,9 +3,9 @@
 import re
 from typing import List, Optional, Union
 
-from wireviz.DataClasses import Color
-from wireviz.wv_colors import translate_color
-from wireviz.wv_helper import remove_links
+from wireviz_studio.core.colors import translate_color
+from wireviz_studio.core.helpers import remove_links
+from wireviz_studio.core.models import Color
 
 
 def nested_html_table(
@@ -65,7 +65,7 @@ def html_colorbar(color: Color) -> str:
 
 
 def html_image(image):
-    from wireviz.DataClasses import Image
+    from wireviz_studio.core.models import Image
 
     if not image:
         return None
@@ -83,7 +83,7 @@ def html_image(image):
 
 
 def html_caption(image):
-    from wireviz.DataClasses import Image
+    from wireviz_studio.core.models import Image
 
     return (
         f'<tdX sides="BLR"{html_bgcolor_attr(image.bgcolor)}>{html_line_breaks(image.caption)}'
@@ -93,7 +93,7 @@ def html_caption(image):
 
 
 def html_size_attr(image):
-    from wireviz.DataClasses import Image
+    from wireviz_studio.core.models import Image
 
     # Return Graphviz HTML attributes to specify minimum or fixed size of a TABLE or TD object
     return (

@@ -11,32 +11,32 @@ mime_subtype_replacements = {"jpg": "jpeg", "tif": "tiff"}
 # TODO: Share cache and code between data_URI_base64() and embed_svg_images()
 def data_URI_base64(file: Union[str, Path], media: str = "image") -> str:
     """Return Base64-encoded data URI of input file."""
-    file = Path(file)
-    b64 = base64.b64encode(file.read_bytes()).decode("utf-8")
-    uri = f"data:{media}/{get_mime_subtype(file)};base64, {b64}"
+    file_path = Path(file)
+    base64_data = base64.b64encode(file_path.read_bytes()).decode("utf-8")
+    data_uri = f"data:{media}/{get_mime_subtype(file_path)};base64, {base64_data}"
     # print(f"data_URI_base64('{file}', '{media}') -> {len(uri)}-character URI")
-    if len(uri) > 65535:
+    if len(data_uri) > 65535:
         print(
             "data_URI_base64(): Warning: Browsers might have different URI length limitations"
         )
-    return uri
+    return data_uri
 
 
 def embed_svg_images(svg_in: str, base_path: Union[str, Path] = Path.cwd()) -> str:
-    images_b64 = {}  # cache of base64-encoded images
+    image_cache = {}  # cache of base64-encoded images
 
     def image_tag(pre: str, url: str, post: str) -> str:
         return f'<image{pre} xlink:href="{url}"{post}>'
 
     def replace(match: re.Match) -> str:
-        imgurl = match["URL"]
-        if not imgurl in images_b64:  # only encode/cache every unique URL once
-            imgurl_abs = (Path(base_path) / imgurl).resolve()
-            image = imgurl_abs.read_bytes()
-            images_b64[imgurl] = base64.b64encode(image).decode("utf-8")
+        image_url = match["URL"]
+        if image_url not in image_cache:  # only encode/cache every unique URL once
+            absolute_image_path = (Path(base_path) / image_url).resolve()
+            image_bytes = absolute_image_path.read_bytes()
+            image_cache[image_url] = base64.b64encode(image_bytes).decode("utf-8")
         return image_tag(
             match["PRE"] or "",
-            f"data:image/{get_mime_subtype(imgurl)};base64, {images_b64[imgurl]}",
+            f"data:image/{get_mime_subtype(image_url)};base64, {image_cache[image_url]}",
             match["POST"] or "",
         )
 

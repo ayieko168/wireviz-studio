@@ -134,21 +134,23 @@ def get_color_hex(input: Colors, pad: bool = False) -> List[str]:
         return [color_default]
     elif input[0] == "#":  # Hex color(s)
         output = input.split(":")
-        for i, c in enumerate(output):
-            if c[0] != "#" or not all(d in _hex_digits for d in c[1:]):
-                if c != input:
-                    c += f" in input: {input}"
-                print(f"Invalid hex color: {c}")
-                output[i] = color_default
+        for index, color_part in enumerate(output):
+            if color_part[0] != "#" or not all(
+                digit in _hex_digits for digit in color_part[1:]
+            ):
+                if color_part != input:
+                    color_part += f" in input: {input}"
+                print(f"Invalid hex color: {color_part}")
+                output[index] = color_default
     else:  # Color name(s)
 
-        def lookup(c: str) -> str:
+        def lookup(color_name: str) -> str:
             try:
-                return _color_hex[c]
+                return _color_hex[color_name]
             except KeyError:
-                if c != input:
-                    c += f" in input: {input}"
-                print(f"Unknown color name: {c}")
+                if color_name != input:
+                    color_name += f" in input: {input}"
+                print(f"Unknown color name: {color_name}")
                 return color_default
 
         output = [lookup(input[i : i + 2]) for i in range(0, len(input), 2)]
@@ -165,9 +167,9 @@ def get_color_translation(translate: Dict[Color, str], input: Colors) -> List[st
     """Return list of colors translations from either a string of color names or :-separated hex colors."""
 
     def from_hex(hex_input: str) -> str:
-        for color, hex in _color_hex.items():
-            if hex == hex_input:
-                return translate[color]
+        for color_name, hex_code in _color_hex.items():
+            if hex_code == hex_input:
+                return translate[color_name]
         return f'({",".join(str(int(hex_input[i:i+2], 16)) for i in range(1, 6, 2))})'
 
     return (

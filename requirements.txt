@@ -1,5 +1,7 @@
-click
 graphviz
-pillow
-pyyaml
-setuptools
+Pillow
+PyYAML
+PySide6
+pytest
+pytest-cov
+ruff

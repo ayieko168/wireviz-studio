@@ -1,2 +1,53 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wireviz-studio"
+version = "0.1.0a0"
+description = "WireViz Studio core and GUI application"
+readme = "docs/README.md"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0-only" }
+authors = [
+	{ name = "WireViz Studio Contributors" },
+]
+dependencies = [
+	"graphviz==0.21",
+	"Pillow==12.1.1",
+	"PyYAML==6.0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+	"pytest==9.0.2",
+	"pytest-cov==7.1.0",
+	"ruff==0.15.8",
+]
+gui = [
+	"PySide6==6.11.0",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+wireviz_studio = ["gui/themes/*.qss"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
 [tool.isort]
 profile = "black"

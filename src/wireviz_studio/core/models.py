@@ -5,8 +5,8 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
-from wireviz.wv_colors import COLOR_CODES, Color, ColorMode, Colors, ColorScheme
-from wireviz.wv_helper import aspect_ratio, int2tuple
+from wireviz_studio.core.colors import COLOR_CODES, Color, ColorMode, Colors, ColorScheme
+from wireviz_studio.core.helpers import aspect_ratio, int2tuple
 
 # Each type alias have their legal values described in comments - validation might be implemented in the future
 PlainText = str  # Text not containing HTML tags nor newlines
@@ -279,21 +279,21 @@ class Cable:
 
         if isinstance(self.gauge, str):  # gauge and unit specified
             try:
-                g, u = self.gauge.split(" ")
+                gauge_value, gauge_unit = self.gauge.split(" ")
             except Exception:
                 raise Exception(
                     f"Cable {self.name} gauge={self.gauge} - Gauge must be a number, or number and unit separated by a space"
                 )
-            self.gauge = g
+            self.gauge = gauge_value
 
             if self.gauge_unit is not None:
                 print(
-                    f"Warning: Cable {self.name} gauge_unit={self.gauge_unit} is ignored because its gauge contains {u}"
+                    f"Warning: Cable {self.name} gauge_unit={self.gauge_unit} is ignored because its gauge contains {gauge_unit}"
                 )
-            if u.upper() == "AWG":
-                self.gauge_unit = u.upper()
+            if gauge_unit.upper() == "AWG":
+                self.gauge_unit = gauge_unit.upper()
             else:
-                self.gauge_unit = u.replace("mm2", "mm\u00B2")
+                self.gauge_unit = gauge_unit.replace("mm2", "mm\u00B2")
 
         elif self.gauge is not None:  # gauge specified, assume mm2
             if self.gauge_unit is None:
@@ -303,18 +303,18 @@ class Cable:
 
         if isinstance(self.length, str):  # length and unit specified
             try:
-                L, u = self.length.split(" ")
-                L = float(L)
+                length_value, length_unit = self.length.split(" ")
+                length_value = float(length_value)
             except Exception:
                 raise Exception(
                     f"Cable {self.name} length={self.length} - Length must be a number, or number and unit separated by a space"
                 )
-            self.length = L
+            self.length = length_value
             if self.length_unit is not None:
                 print(
-                    f"Warning: Cable {self.name} length_unit={self.length_unit} is ignored because its length contains {u}"
+                    f"Warning: Cable {self.name} length_unit={self.length_unit} is ignored because its length contains {length_unit}"
                 )
-            self.length_unit = u
+            self.length_unit = length_unit
         elif not isinstance(self.length, (int, float)):
             raise Exception(f"Cable {self.name} length has a non-numeric value")
         elif self.length_unit is None:
@@ -335,8 +335,8 @@ class Cable:
 
             # make color code loop around if more wires than colors
             if self.wirecount > len(self.colors):
-                m = self.wirecount // len(self.colors) + 1
-                self.colors = self.colors * int(m)
+                repeat_count = self.wirecount // len(self.colors) + 1
+                self.colors = self.colors * int(repeat_count)
             # cut off excess after looping
             self.colors = self.colors[: self.wirecount]
         else:  # wirecount implicit in length of color list
@@ -353,11 +353,17 @@ class Cable:
                 )
 
         # if lists of part numbers are provided check this is a bundle and that it matches the wirecount.
-        for idfield in [self.manufacturer, self.mpn, self.supplier, self.spn, self.pn]:
-            if isinstance(idfield, list):
+        for part_field in [
+            self.manufacturer,
+            self.mpn,
+            self.supplier,
+            self.spn,
+            self.pn,
+        ]:
+            if isinstance(part_field, list):
                 if self.category == "bundle":
                     # check the length
-                    if len(idfield) != self.wirecount:
+                    if len(part_field) != self.wirecount:
                         raise Exception("lists of part data must match wirecount")
                 else:
                     raise Exception("lists of part data are only supported for bundles")
@@ -388,9 +394,15 @@ class Cable:
         to_pin = int2tuple(to_pin)
         if len(from_pin) != len(to_pin):
             raise Exception("from_pin must have the same number of elements as to_pin")
-        for i, _ in enumerate(from_pin):
+        for pin_index, _ in enumerate(from_pin):
             self.connections.append(
-                Connection(from_name, from_pin[i], via_wire[i], to_name, to_pin[i])
+                Connection(
+                    from_name,
+                    from_pin[pin_index],
+                    via_wire[pin_index],
+                    to_name,
+                    to_pin[pin_index],
+                )
             )
 
     def get_qty_multiplier(self, qty_multiplier: Optional[CableMultiplier]) -> float:

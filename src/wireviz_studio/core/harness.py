@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import shutil
 from collections import Counter
 from dataclasses import dataclass
 from itertools import zip_longest
@@ -8,30 +9,19 @@ from pathlib import Path
 from typing import Any, List, Union
 
 from graphviz import Graph
-from wireviz import APP_NAME, APP_URL, __version__, wv_colors
-from wireviz.DataClasses import (
-    Cable,
-    Connector,
-    MateComponent,
-    MatePin,
-    Metadata,
-    Options,
-    Side,
-    Tweak,
-)
-from wireviz.svgembed import embed_svg_images, embed_svg_images_file
-from wireviz.wv_bom import (
+import wireviz_studio.core.colors as wv_colors
+from wireviz_studio import APP_NAME, APP_URL, __version__
+from wireviz_studio.core.bom import (
     HEADER_MPN,
     HEADER_PN,
     HEADER_SPN,
-    bom_list,
-    component_table_entry,
     generate_bom,
     get_additional_component_table,
     pn_info_string,
 )
-from wireviz.wv_colors import get_color_hex, translate_color
-from wireviz.wv_gv_html import (
+from wireviz_studio.core.colors import get_color_hex, translate_color
+from wireviz_studio.core.exceptions import GraphVizNotFoundError, RenderError
+from wireviz_studio.core.graphviz_html import (
     html_bgcolor,
     html_bgcolor_attr,
     html_caption,
@@ -39,17 +29,20 @@ from wireviz.wv_gv_html import (
     html_image,
     html_line_breaks,
     nested_html_table,
-    remove_links,
 )
-from wireviz.wv_helper import (
-    awg_equiv,
-    file_write_text,
-    flatten2d,
-    is_arrow,
-    mm2_equiv,
-    tuplelist2tsv,
+from wireviz_studio.core.helpers import awg_equiv, is_arrow, mm2_equiv, remove_links
+from wireviz_studio.core.models import (
+    Cable,
+    Connector,
+    MateComponent,
+    MatePin,
+    Metadata,
+    Options,
+    Pin,
+    Side,
+    Tweak,
 )
-from wireviz.wv_html import generate_html_output
+from wireviz_studio.core.svg_embed import embed_svg_images
 
 OLD_CONNECTOR_ATTR = {
     "pinout": "was renamed to 'pinlabels' in v0.2",
@@ -99,11 +92,11 @@ class Harness:
     def connect(
         self,
         from_name: str,
-        from_pin: (int, str),
+        from_pin: Pin,
         via_name: str,
-        via_wire: (int, str),
+        via_wire: Pin,
         to_name: str,
-        to_pin: (int, str),
+        to_pin: Pin,
     ) -> None:
         # check from and to connectors
         for name, pin in zip([from_name, to_name], [from_pin, to_pin]):
@@ -193,7 +186,7 @@ class Harness:
             html = []
             # fmt: off
             rows = [[f'{html_bgcolor(connector.bgcolor_title)}{remove_links(connector.name)}'
-                        if connector.show_name else None],
+                     if connector.show_name else None],
                     [pn_info_string(HEADER_PN, None, remove_links(connector.pn)),
                      html_line_breaks(pn_info_string(HEADER_MPN, connector.manufacturer, connector.mpn)),
                      html_line_breaks(pn_info_string(HEADER_SPN, connector.supplier, connector.spn))],
@@ -535,9 +528,9 @@ class Harness:
         # mates
         for mate in self.mates:
             if mate.shape[-1] == ">":
-                dir = "both" if mate.shape[0] == "<" else "forward"
+                edge_direction = "both" if mate.shape[0] == "<" else "forward"
             else:
-                dir = "back" if mate.shape[0] == "<" else "none"
+                edge_direction = "back" if mate.shape[0] == "<" else "none"
 
             if isinstance(mate, MatePin):
                 color = "#000000"
@@ -561,7 +554,7 @@ class Harness:
             code_from = f"{mate.from_name}{from_port_str}:e"
             code_to = f"{mate.to_name}{to_port_str}:w"
 
-            dot.attr("edge", color=color, style="dashed", dir=dir)
+            dot.attr("edge", color=color, style="dashed", dir=edge_direction)
             dot.edge(code_from, code_to)
 
         def typecheck(name: str, value: Any, expect: type) -> None:
@@ -660,54 +653,36 @@ class Harness:
         graph = self.graph
         return embed_svg_images(graph.pipe(format="svg").decode("utf-8"), Path.cwd())
 
+    def render_png(self) -> bytes:
+        if shutil.which("dot") is None:
+            raise GraphVizNotFoundError(
+                "GraphViz dot executable was not found on PATH."
+            )
+        try:
+            return self.png
+        except Exception as exc:
+            raise RenderError(str(exc)) from exc
+
+    def render_svg(self) -> str:
+        if shutil.which("dot") is None:
+            raise GraphVizNotFoundError(
+                "GraphViz dot executable was not found on PATH."
+            )
+        try:
+            return self.svg
+        except Exception as exc:
+            raise RenderError(str(exc)) from exc
+
     def output(
         self,
-        filename: (str, Path),
+        filename: Union[str, Path],
         view: bool = False,
         cleanup: bool = True,
         fmt: tuple = ("html", "png", "svg", "tsv"),
     ) -> None:
-        # graphical output
-        graph = self.graph
-        svg_already_exists = Path(
-            f"{filename}.svg"
-        ).exists()  # if SVG already exists, do not delete later
-        # graphical output
-        for f in fmt:
-            if f in ("png", "svg", "html"):
-                if f == "html":  # if HTML format is specified,
-                    f = "svg"  # generate SVG for embedding into HTML
-                # SVG file will be renamed/deleted later
-                _filename = f"{filename}.tmp" if f == "svg" else filename
-                # TODO: prevent rendering SVG twice when both SVG and HTML are specified
-                graph.format = f
-                graph.render(filename=_filename, view=view, cleanup=cleanup)
-        # embed images into SVG output
-        if "svg" in fmt or "html" in fmt:
-            embed_svg_images_file(f"{filename}.tmp.svg")
-        # GraphViz output
-        if "gv" in fmt:
-            graph.save(filename=f"{filename}.gv")
-        # BOM output
-        bomlist = bom_list(self.bom())
-        if "tsv" in fmt:
-            file_write_text(f"{filename}.bom.tsv", tuplelist2tsv(bomlist))
-        if "csv" in fmt:
-            # TODO: implement CSV output (preferrably using CSV library)
-            print("CSV output is not yet supported")
-        # HTML output
-        if "html" in fmt:
-            generate_html_output(filename, bomlist, self.metadata, self.options)
-        # PDF output
-        if "pdf" in fmt:
-            # TODO: implement PDF output
-            print("PDF output is not yet supported")
-        # delete SVG if not needed
-        if "html" in fmt and not "svg" in fmt:
-            # SVG file was just needed to generate HTML
-            Path(f"{filename}.tmp.svg").unlink()
-        elif "svg" in fmt:
-            Path(f"{filename}.tmp.svg").replace(f"{filename}.svg")
+        raise NotImplementedError(
+            "File output moved out of the core package. Use wireviz_studio.export instead."
+        )
 
     def bom(self):
         if not self._bom:

@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import annotations
+
 from dataclasses import asdict
 from itertools import groupby
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-from wireviz.DataClasses import AdditionalComponent, Cable, Color, Connector
-from wireviz.wv_colors import translate_color
-from wireviz.wv_gv_html import html_bgcolor_attr, html_line_breaks
-from wireviz.wv_helper import clean_whitespace
+from wireviz_studio.core.colors import translate_color
+from wireviz_studio.core.graphviz_html import html_bgcolor_attr, html_line_breaks
+from wireviz_studio.core.helpers import clean_whitespace
+from wireviz_studio.core.models import AdditionalComponent, Cable, Color, Connector
+
+if TYPE_CHECKING:
+    from wireviz_studio.core.harness import Harness
 
 BOM_COLUMNS_ALWAYS = ("id", "description", "qty", "unit", "designators")
 BOM_COLUMNS_OPTIONAL = ("pn", "manufacturer", "mpn", "supplier", "spn")
@@ -97,8 +102,6 @@ def bom_entry_key(entry: BOMEntry) -> BOMKey:
 
 def generate_bom(harness: "Harness") -> List[BOMEntry]:
     """Return a list of BOM entries generated from the harness."""
-    from wireviz.Harness import Harness  # Local import to avoid circular imports
-
     bom_entries = []
     # connectors
     for connector in harness.connectors.values():

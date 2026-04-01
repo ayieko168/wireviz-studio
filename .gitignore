@@ -1,15 +1,32 @@
+# OS / editor
 .DS_Store
-.idea/
-.eggs
-__pycache__
-.*.swp
-*.egg-info
-*.pyc
-build
-data
-dist
-venv/
-.venv/
 desktop.ini
 thumbs.db
+.idea/
+.vscode/
+.*.swp
+
+# Python environments / caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Packaging / build artifacts
+build/
+dist/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+
+# Temporary files
 temp/
+data/
+
+# Local bundled Graphviz binaries are kept out of git.
+# CI/release workflows can populate this directory per platform.
+bundled_graphviz/*
+!bundled_graphviz/.gitkeep
+!bundled_graphviz/**/.gitkeep
