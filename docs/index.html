@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WireViz Studio</title>
+  <meta name="description" content="WireViz Studio is a cross-platform desktop app for wiring harness diagrams and BOM export from YAML.">
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --bg-accent: #e9e3d5;
+      --text: #1d2a2e;
+      --muted: #4c5b61;
+      --brand: #0f6b63;
+      --brand-2: #f4a259;
+      --card: #fffdf8;
+      --border: #d6d0c2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(244, 162, 89, 0.15), transparent 40%),
+        radial-gradient(circle at 90% 10%, rgba(15, 107, 99, 0.16), transparent 30%),
+        linear-gradient(180deg, var(--bg), var(--bg-accent));
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      width: min(1100px, 92vw);
+      margin: 0 auto;
+      padding: 2rem 0 3rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 14px 30px rgba(17, 36, 42, 0.08);
+      padding: 1.2rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      letter-spacing: 0.02em;
+    }
+
+    .tagline {
+      color: var(--muted);
+      margin: 0.7rem 0 1.1rem;
+      font-size: 1.05rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .btn {
+      text-decoration: none;
+      background: var(--brand);
+      color: white;
+      border-radius: 999px;
+      padding: 0.58rem 1rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+
+    .btn.alt {
+      background: transparent;
+      color: var(--brand);
+      border-color: var(--brand);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: #0b5750;
+    }
+
+    .btn.alt:hover {
+      background: rgba(15, 107, 99, 0.08);
+    }
+
+    .preview {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+      color: #153d44;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--muted);
+    }
+
+    li {
+      margin: 0.25rem 0;
+    }
+
+    .footer {
+      margin-top: 1.5rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="card">
+        <h1>WireViz Studio</h1>
+        <p class="tagline">Desktop YAML-to-diagram workflow for wiring harnesses, with BOM preview and one-click exports.</p>
+        <div class="actions">
+          <a class="btn" href="https://github.com/ayieko168/WireViz-GUI/releases">Download Releases</a>
+          <a class="btn alt" href="README.md">Documentation</a>
+          <a class="btn alt" href="syntax.md">Syntax Reference</a>
+        </div>
+      </div>
+      <div class="card">
+        <img class="preview" src="screenshots/wireviz-studio.png" alt="WireViz Studio application window preview">
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Build Targets</h2>
+        <ul>
+          <li>Windows installer (.exe)</li>
+          <li>Windows portable (.zip)</li>
+          <li>macOS disk image (.dmg)</li>
+          <li>Linux AppImage (.AppImage)</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Core Features</h2>
+        <ul>
+          <li>Multi-tab YAML editor with highlighting</li>
+          <li>Manual render for predictable iteration</li>
+          <li>Diagram and BOM tabbed preview</li>
+          <li>PNG, SVG, PDF, and CSV export</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Project Links</h2>
+        <ul>
+          <li><a href="https://github.com/ayieko168/WireViz-GUI">Repository</a></li>
+          <li><a href="CONTRIBUTING.md">Contributing</a></li>
+          <li><a href="CHANGELOG.md">Changelog</a></li>
+          <li><a href="implementation-progress.md">Implementation Progress</a></li>
+        </ul>
+      </article>
+    </section>
+
+    <p class="footer">WireViz Studio is licensed under GPL-3.0-only.</p>
+  </main>
+</body>
+</html>

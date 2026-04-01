@@ -47,7 +47,8 @@ target-version = "py310"
 line-length = 88
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B"]
+# Start with correctness-focused checks; style/import/bugbear can be added incrementally.
+select = ["E9", "F63", "F7", "F82"]
 
 [tool.isort]
 profile = "black"

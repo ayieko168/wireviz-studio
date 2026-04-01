@@ -8,8 +8,8 @@ This file is the physical progress log for the transformation plan.
 - [x] Phase 2 - GraphViz Binary Management
 - [x] Phase 3 - PySide6 GUI
 - [x] Phase 4 - Testing
-- [ ] Phase 5 - CI/CD and Packaging (in progress)
-- [ ] Phase 6 - Documentation
+- [x] Phase 5 - CI/CD and Packaging
+- [x] Phase 6 - Documentation
 
 ## Phase 2 Detail
 
@@ -48,11 +48,21 @@ This file is the physical progress log for the transformation plan.
 
 ## Phase 5 Detail
 
-- [x] Step 5.1: Replaced legacy examples-only workflow with cross-platform CI matrix in `.github/workflows/main.yml` (Windows/macOS/Linux, Python 3.10-3.12, ruff, pytest, coverage gate).
+- [x] Step 5.1: Replaced legacy examples-only workflow with cross-platform CI matrix in `.github/workflows/main.yml` (Windows/macOS/Linux, Python 3.10-3.13, ruff, pytest, coverage gate).
 - [x] Step 5.2: Added tag-triggered release workflow `.github/workflows/release.yml` to build and publish platform artifacts.
-- [x] Step 5.3: Added `packaging/build_portable.py` for PyInstaller-based portable bundle creation and archive generation.
-- [x] Step 5.4: Updated `packaging/README.md` with CI/release workflow and local packaging usage.
-- [ ] Step 5.5: Add installer-native packaging targets (Windows installer, macOS DMG, Linux AppImage) and signing/notarization pipeline.
+- [x] Step 5.3: Added GitHub Pages workflow (`.github/workflows/pages.yml`) and static docs landing page (`docs/index.html`) with screenshot/download links.
+
+Additional completed scope tracked under Phase 5 (outside original 5.1-5.3 plan numbering):
+
+- [x] Packaging extension A: Added `packaging/build_portable.py` for PyInstaller-based portable bundle creation and archive generation.
+- [x] Packaging extension B: Updated `packaging/README.md` with CI/release workflow, local packaging usage, and dedicated cleanup script usage.
+- [x] Packaging extension C: Added installer-native packaging targets (`packaging/build_native.py`) and release pipeline support for optional signing/notarization hooks.
+
+## Phase 6 Detail
+
+- [x] Step 6.1: Rewrote `docs/README.md` from legacy CLI-focused content to WireViz Studio-focused usage, install, and packaging guidance.
+- [x] Step 6.2: Kept existing `examples/` and `tutorial/` content as the current curated onboarding set (no additional curation needed for now).
+- [x] Step 6.3: Refreshed `docs/syntax.md` with Studio-oriented usage notes and cross-links.
 
 ## Phase 1 Detail
 
@@ -76,4 +86,7 @@ This file is the physical progress log for the transformation plan.
 - Validation (Phase 4 start): `./venv/Scripts/python.exe -m pytest tests/core -q` passed with 20 tests on 2026-04-01.
 - Validation (Phase 4 expansion): `./venv/Scripts/python.exe -m pytest tests/core -q` passed with 30 tests on 2026-04-01.
 - Validation (Phase 5 CI baseline): `./venv/Scripts/python.exe -m pytest tests/core -q` passed with 30 tests on 2026-04-01.
-- Validation (Phase 5 packaging smoke): `./venv/Scripts/python.exe packaging/build_portable.py` produced `dist-artifacts/wireviz-studio-windows.zip` on 2026-04-01.
+- Validation (Phase 5 packaging extension A smoke): `./venv/Scripts/python.exe packaging/build_portable.py --build-type portable --clean --version v0.1.0-test` produced a structured artifact in `dist-artifacts/portable/windows/py3.12/` on 2026-04-02.
+- Validation (Phase 5 packaging extension C native pipeline smoke): `./venv/Scripts/python.exe packaging/build_native.py --help` ran successfully and release workflow now includes native installer jobs on 2026-04-02.
+- Validation (Phase 5.3 Pages wiring): Added `.github/workflows/pages.yml` deploying `docs/` via `actions/upload-pages-artifact` and `actions/deploy-pages`, with landing page at `docs/index.html` on 2026-04-02.
+- Validation (Phase 6 docs pass 1): Updated `docs/README.md` and `docs/syntax.md` with Studio-focused structure and onboarding links on 2026-04-02.

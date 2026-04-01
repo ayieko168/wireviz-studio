@@ -1,5 +1,19 @@
 # WireViz Syntax
 
+This page documents the YAML schema used by WireViz Studio.
+
+Studio workflow reminder:
+
+- Edit YAML in the editor tab.
+- Run Render in the toolbar.
+- Review Diagram and BOM tabs.
+- Export from the Export action when output looks correct.
+
+Related docs:
+
+- Main documentation: README.md
+- Guided examples: ../tutorial/readme.md
+
 ## Main sections
 
 ```yaml

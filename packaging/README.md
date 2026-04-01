@@ -38,6 +38,60 @@ From repository root:
 
 Output archives are written to `dist-artifacts/`.
 
+## Local Native Builds (Phase 5 Packaging Extension C)
+
+Native targets use `packaging/build_native.py` and produce platform-specific artifacts:
+
+- Windows: NSIS installer (`.exe`)
+- macOS: DMG (`.dmg`)
+- Linux: AppImage (`.AppImage`)
+
+### Windows Installer
+
+Requirements:
+
+- NSIS (`makensis`) available in PATH
+
+Command:
+
+```powershell
+./venv/Scripts/python.exe packaging/build_native.py --target windows-installer --clean
+```
+
+Optional signing environment variables:
+
+- `WINDOWS_SIGN_CERT_SHA1`
+- `WINDOWS_TIMESTAMP_URL` (defaults to `http://timestamp.digicert.com`)
+
+### macOS DMG
+
+Command:
+
+```bash
+./venv/Scripts/python.exe packaging/build_native.py --target macos-dmg --clean
+```
+
+Optional signing/notarization environment variables:
+
+- `APPLE_CODESIGN_IDENTITY`
+- `APPLE_NOTARY_PROFILE`
+
+### Linux AppImage
+
+Requirements:
+
+- `appimagetool` available in PATH or provided via `APPIMAGETOOL`
+
+Command:
+
+```bash
+./venv/Scripts/python.exe packaging/build_native.py --target linux-appimage --clean
+```
+
+Optional detached signature toggle:
+
+- `GPG_SIGN_APPIMAGE=1` (when GPG key is already loaded)
+
 ## Cleanup Generated Outputs
 
 Use the dedicated cleanup script from repository root:

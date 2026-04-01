@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  package:
+  package-portable:
     name: "Package ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
@@ -48,13 +48,87 @@ jobs:
       - name: Upload packaged artifact
         uses: actions/upload-artifact@v4
         with:
+          name: ${{ matrix.artifact_name }}-portable
+          path: dist-artifacts/**
+          if-no-files-found: error
+
+  package-native:
+    name: "Native ${{ matrix.target }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: windows-installer
+            artifact_name: wireviz-studio-windows-native
+          - os: macos-latest
+            target: macos-dmg
+            artifact_name: wireviz-studio-macos-native
+          - os: ubuntu-latest
+            target: linux-appimage
+            artifact_name: wireviz-studio-linux-native
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install Graphviz runtime
+        uses: ts-graphviz/setup-graphviz@v2
+
+      - name: Install packaging dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[gui]"
+          python -m pip install pyinstaller==6.16.0
+
+      - name: Install NSIS (Windows)
+        if: matrix.target == 'windows-installer'
+        run: choco install nsis --yes
+
+      - name: Install AppImage tool (Linux)
+        if: matrix.target == 'linux-appimage'
+        run: |
+          curl -L -o appimagetool.AppImage https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool.AppImage
+
+      - name: Setup Apple notarization profile (macOS)
+        if: matrix.target == 'macos-dmg'
+        shell: bash
+        run: |
+          if [[ -z "${APPLE_NOTARY_KEY_ID:-}" || -z "${APPLE_NOTARY_ISSUER_ID:-}" || -z "${APPLE_NOTARY_PRIVATE_KEY_BASE64:-}" ]]; then
+            echo "Apple notary env vars not set; skipping notarization profile setup."
+            exit 0
+          fi
+          mkdir -p "$RUNNER_TEMP/notary"
+          echo "$APPLE_NOTARY_PRIVATE_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/notary/AuthKey_${APPLE_NOTARY_KEY_ID}.p8"
+          xcrun notarytool store-credentials "wirevizstudio-notary" \
+            --key "$RUNNER_TEMP/notary/AuthKey_${APPLE_NOTARY_KEY_ID}.p8" \
+            --key-id "$APPLE_NOTARY_KEY_ID" \
+            --issuer "$APPLE_NOTARY_ISSUER_ID"
+
+      - name: Build native package
+        env:
+          APPIMAGETOOL: ${{ github.workspace }}/appimagetool.AppImage
+          APPLE_NOTARY_PROFILE: wirevizstudio-notary
+          WINDOWS_TIMESTAMP_URL: http://timestamp.digicert.com
+        run: python packaging/build_native.py --target ${{ matrix.target }} --clean --version "${{ github.ref_name }}"
+
+      - name: Upload native artifact
+        uses: actions/upload-artifact@v4
+        with:
           name: ${{ matrix.artifact_name }}
           path: dist-artifacts/**
           if-no-files-found: error
 
   publish:
     name: Publish GitHub Release
-    needs: package
+    needs: [package-portable, package-native]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
