@@ -1,1 +1,53 @@
-/* Phase 3 theme implementation placeholder. */
+QMainWindow {
+	background: #f6f4ef;
+}
+
+QMenuBar, QMenu, QStatusBar, QToolBar {
+	background: #ece7de;
+	color: #1f2933;
+}
+
+QPlainTextEdit {
+	background: #fffdfa;
+	color: #1f2933;
+	border: 1px solid #d9d2c3;
+	selection-background-color: #e6bf6a;
+	selection-color: #1f2933;
+}
+
+QTabWidget::pane {
+	border: 1px solid #d9d2c3;
+	background: #fffdfa;
+}
+
+QTabBar::tab {
+	background: #ece7de;
+	color: #25313a;
+	padding: 7px 12px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	margin-right: 2px;
+}
+
+QTabBar::tab:selected {
+	background: #fffdfa;
+	font-weight: 600;
+}
+
+QPushButton {
+	background: #2f6f9f;
+	color: #ffffff;
+	border: none;
+	border-radius: 4px;
+	padding: 6px 10px;
+}
+
+QPushButton:hover {
+	background: #255a81;
+}
+
+QTableWidget {
+	background: #fffdfa;
+	gridline-color: #d6cfc0;
+	alternate-background-color: #f7f2e8;
+}
