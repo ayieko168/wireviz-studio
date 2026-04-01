@@ -71,7 +71,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          - os: windows-2022
             target: windows-installer
             artifact_name: wireviz-studio-windows-native
           - os: macos-latest
@@ -113,16 +113,29 @@ jobs:
 
       - name: Install NSIS (Windows)
         if: matrix.target == 'windows-installer'
-        run: choco install nsis --yes
+        shell: pwsh
+        run: |
+          choco install nsis.install --yes --no-progress
+          where.exe makensis || $true
 
       - name: Add NSIS to PATH (Windows)
         if: matrix.target == 'windows-installer'
         shell: pwsh
         run: |
+          $existing = Get-Command makensis -ErrorAction SilentlyContinue
+          if ($existing) {
+            $resolved = Split-Path -Path $existing.Source -Parent
+            Add-Content -Path $env:GITHUB_PATH -Value $resolved
+            Write-Host "Found makensis at: $($existing.Source)"
+            & $existing.Source /VERSION
+            exit 0
+          }
+
           $candidateDirs = @(
-            "$env:ProgramFiles(x86)\NSIS",
-            "$env:ProgramW6432\NSIS",
-            "$env:ProgramFiles\NSIS"
+            "${env:ProgramFiles(x86)}\NSIS",
+            "${env:ProgramW6432}\NSIS",
+            "${env:ProgramFiles}\NSIS",
+            "C:\ProgramData\chocolatey\bin"
           )
           $nsisDir = $null
           foreach ($dir in $candidateDirs) {
@@ -137,6 +150,8 @@ jobs:
           }
 
           Add-Content -Path $env:GITHUB_PATH -Value $nsisDir
+          Write-Host "Using NSIS directory: $nsisDir"
+          where.exe makensis || $true
           & (Join-Path $nsisDir 'makensis.exe') /VERSION
 
       - name: Install AppImage tool (Linux)
