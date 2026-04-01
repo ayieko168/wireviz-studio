@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtGui import QAction, QCloseEvent, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -22,6 +22,7 @@ from wireviz_studio.graphviz_manager import resolve_dot_version
 from wireviz_studio.gui.editor import EditorTabs
 from wireviz_studio.gui.export import ExportDialog
 from wireviz_studio.gui.preview import PreviewPanel
+from wireviz_studio.gui.graphviz_setup_dialog import GraphVizSetupDialog
 from wireviz_studio.gui.settings import AppSettings
 from wireviz_studio.gui.theme_loader import apply_theme
 from wireviz_studio.gui.worker import RenderWorker
@@ -58,8 +59,11 @@ class MainWindow(QMainWindow):
         self.editor_tabs.currentContentChanged.connect(self._on_content_changed)
 
         self._restore_window_state()
-        self._update_graphviz_status()
+        graphviz_found = self._update_graphviz_status()
         self._refresh_recent_files_menu()
+
+        if not graphviz_found:
+            QTimer.singleShot(0, self._show_graphviz_setup_dialog)
 
     def _build_actions(self) -> None:
         self.act_new = QAction("New", self)
@@ -99,6 +103,9 @@ class MainWindow(QMainWindow):
         self.act_theme.setChecked(self._settings.theme == "dark")
         self.act_theme.triggered.connect(self._toggle_theme)
 
+        self.act_check_graphviz = QAction("Check for GraphViz Updates", self)
+        self.act_check_graphviz.triggered.connect(self._show_graphviz_check_dialog)
+
         self.act_about = QAction("About", self)
         self.act_about.triggered.connect(self._show_about)
 
@@ -124,6 +131,8 @@ class MainWindow(QMainWindow):
         menu_tools = self.menuBar().addMenu("Tools")
         menu_tools.addAction(self.act_render)
         menu_tools.addAction(self.act_export)
+        menu_tools.addSeparator()
+        menu_tools.addAction(self.act_check_graphviz)
 
         menu_help = self.menuBar().addMenu("Help")
         menu_help.addAction(self.act_about)
@@ -297,10 +306,23 @@ class MainWindow(QMainWindow):
         self.editor_tabs.open_file(file_path)
         self._push_recent_file(file_path)
 
-    def _update_graphviz_status(self) -> None:
+    def _update_graphviz_status(self) -> bool:
+        """Refresh GraphViz status bar entry and return True when dot is found."""
         version = resolve_dot_version()
-        self._status_graphviz = f"GraphViz: {version}" if version else "GraphViz: unavailable"
+        self._status_graphviz = f"GraphViz: {version}" if version else "GraphViz: not found"
         self._refresh_statusbar()
+        return version is not None
+
+    def _show_graphviz_setup_dialog(self) -> None:
+        dialog = GraphVizSetupDialog(self, mode="setup_missing")
+        dialog.graphviz_configured.connect(self._update_graphviz_status)
+        dialog.exec()
+
+    def _show_graphviz_check_dialog(self) -> None:
+        """Show the GraphViz setup dialog for manual checking/updating."""
+        dialog = GraphVizSetupDialog(self, mode="check_updates")
+        dialog.graphviz_configured.connect(self._update_graphviz_status)
+        dialog.exec()
 
     def _restore_window_state(self) -> None:
         if self._settings.window_geometry:
