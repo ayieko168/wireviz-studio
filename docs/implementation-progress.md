@@ -7,7 +7,7 @@ This file is the physical progress log for the transformation plan.
 - [x] Phase 1 - Project Restructure and Core Refactor
 - [x] Phase 2 - GraphViz Binary Management
 - [x] Phase 3 - PySide6 GUI
-- [ ] Phase 4 - Testing
+- [x] Phase 4 - Testing
 - [ ] Phase 5 - CI/CD and Packaging
 - [ ] Phase 6 - Documentation
 
@@ -31,11 +31,20 @@ This file is the physical progress log for the transformation plan.
 ### Phase 3 Completion Notes (Audit 2026-04-01)
 
 - [x] Step 3.1: Added Help -> Syntax Reference action and hook to open `docs/syntax.md`.
-- [x] Step 3.1: Added toolbar icons and action tooltips for New/Open/Save/Render/Export.
+- [x] Step 3.1: Added toolbar actions/tooltips for New/Open/Save/Render/Export (text-first toolbar styling).
 - [x] Step 3.2: Implemented explicit Ctrl+Tab and Ctrl+Shift+Tab tab navigation shortcuts.
 - [x] Step 3.3: Added BOM copy-to-clipboard behavior (Ctrl+C + context menu Copy).
 - [x] Step 3.4: Updated render error flow to propagate typed `WireVizStudioError` objects.
 - [x] Step 3.5: Implemented export backend execution (PNG/SVG/PDF/CSV) on worker thread with status updates.
+
+## Phase 4 Detail
+
+- [x] Step 4.1: Added `tests/core/test_harness.py` covering BOM caching and render error mapping behavior.
+- [x] Step 4.2: Added `tests/core/test_models.py` covering options fallback defaults, connector multipliers, cable parsing, and cable multipliers.
+- [x] Step 4.3: Added `tests/core/test_bom.py` covering BOM helper utilities, formatting, and deduplication behavior.
+- [x] Step 4.4: Added `tests/core/test_colors.py` covering color hex expansion, padding logic, translation modes, and invalid mode capitalization.
+- [x] Step 4.5: Added parser edge-case/negative-path tests and fixture-driven scenario coverage in `tests/core/test_parser.py`.
+- [x] Step 4.6: Added export integration coverage in `tests/core/test_export.py` for backend output writing and worker dispatch/path normalization.
 
 ## Phase 1 Detail
 
@@ -56,3 +65,5 @@ This file is the physical progress log for the transformation plan.
 - Validation (Phase 2): `./venv/Scripts/python.exe -m pytest tests/core -q` passed with 4 tests.
 - GraphViz resolution now prefers bundled binaries, then system install, then raises `GraphVizNotFoundError`.
 - Validation (Phase 3): GUI modules import cleanly (`PYTHONPATH=src`, import `wireviz_studio.gui.app`) and core tests remain green.
+- Validation (Phase 4 start): `./venv/Scripts/python.exe -m pytest tests/core -q` passed with 20 tests on 2026-04-01.
+- Validation (Phase 4 expansion): `./venv/Scripts/python.exe -m pytest tests/core -q` passed with 30 tests on 2026-04-01.
