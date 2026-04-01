@@ -1,28 +1,41 @@
 QMainWindow {
-	background: #1f2428;
+	background: #1e1e1e;
 }
 
 QMenuBar, QMenu, QStatusBar, QToolBar {
-	background: #2a3137;
-	color: #e9eef2;
+	background: #252526;
+	color: #d4d4d4;
+	border-color: #454545;
+}
+
+QMenu::item:selected {
+	background: #094771;
+	color: #ffffff;
 }
 
 QPlainTextEdit {
-	background: #181d20;
-	color: #f2f5f7;
-	border: 1px solid #3b454e;
-	selection-background-color: #c88719;
+	background: #1e1e1e;
+	color: #d4d4d4;
+	border: 1px solid #3c3c3c;
+	selection-background-color: #264f78;
 	selection-color: #ffffff;
 }
 
+QLineEdit, QComboBox {
+	background: #1f1f1f;
+	color: #d4d4d4;
+	border: 1px solid #3c3c3c;
+	padding: 4px 6px;
+}
+
 QTabWidget::pane {
-	border: 1px solid #3b454e;
-	background: #181d20;
+	border: 1px solid #3c3c3c;
+	background: #1e1e1e;
 }
 
 QTabBar::tab {
-	background: #2a3137;
-	color: #d9e2e9;
+	background: #2d2d2d;
+	color: #c5c5c5;
 	padding: 7px 12px;
 	border-top-left-radius: 4px;
 	border-top-right-radius: 4px;
@@ -30,12 +43,36 @@ QTabBar::tab {
 }
 
 QTabBar::tab:selected {
-	background: #181d20;
+	background: #1e1e1e;
+	color: #ffffff;
 	font-weight: 600;
 }
 
+QTabWidget#editor_tabs QToolButton#editor_tab_close {
+	background: #2f2f2f;
+	color: #c8c8c8;
+	border: 1px solid #4b4b4b;
+	border-radius: 8px;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 0;
+	margin-left: 8px;
+}
+
+QTabWidget#editor_tabs QToolButton#editor_tab_close:hover {
+	background: #e81123;
+	color: #ffffff;
+	border-color: #c50f1f;
+}
+
+QTabWidget#editor_tabs QToolButton#editor_tab_close:pressed {
+	background: #c50f1f;
+	color: #ffffff;
+	border-color: #a20c19;
+}
+
 QPushButton {
-	background: #2f8a7e;
+	background: #0e639c;
 	color: #ffffff;
 	border: none;
 	border-radius: 4px;
@@ -43,12 +80,25 @@ QPushButton {
 }
 
 QPushButton:hover {
-	background: #256d64;
+	background: #1177bb;
+}
+
+QPushButton:pressed {
+	background: #0b578a;
 }
 
 QTableWidget {
-	background: #181d20;
-	color: #f2f5f7;
-	gridline-color: #3b454e;
-	alternate-background-color: #21292f;
+	background: #1e1e1e;
+	color: #d4d4d4;
+	gridline-color: #3c3c3c;
+	alternate-background-color: #252526;
+	selection-background-color: #264f78;
+	selection-color: #ffffff;
+}
+
+QHeaderView::section {
+	background: #252526;
+	color: #d4d4d4;
+	border: 1px solid #3c3c3c;
+	padding: 4px;
 }

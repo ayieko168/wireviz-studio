@@ -13,6 +13,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QSplitter,
     QStatusBar,
+    QSizePolicy,
+    QWidget,
 )
 
 from wireviz_studio import APP_NAME
@@ -128,10 +130,16 @@ class MainWindow(QMainWindow):
 
     def _build_toolbar(self) -> None:
         toolbar = self.addToolBar("Main")
+        toolbar.setObjectName("main_toolbar")
         toolbar.setMovable(False)
         toolbar.addAction(self.act_new)
         toolbar.addAction(self.act_open)
         toolbar.addAction(self.act_save)
+
+        spacer = QWidget(self)
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        toolbar.addWidget(spacer)
+
         toolbar.addSeparator()
         toolbar.addAction(self.act_render)
         toolbar.addAction(self.act_export)
@@ -232,14 +240,22 @@ class MainWindow(QMainWindow):
     def _show_export_dialog(self) -> None:
         dialog = ExportDialog(
             self,
-            default_path=self._settings.last_export_dir,
+            default_path=self._settings.last_export_path or self._settings.last_export_dir,
             default_format=self._settings.last_export_format,
+            default_pdf_mode=self._settings.last_export_pdf_mode,
         )
+        if self._settings.export_dialog_size:
+            dialog.resize(self._settings.export_dialog_size)
+
         if dialog.exec() != dialog.DialogCode.Accepted:
+            self._settings.export_dialog_size = dialog.size()
             return
 
         selection = dialog.selection()
         self._settings.last_export_format = selection.format_name
+        self._settings.last_export_pdf_mode = selection.pdf_mode
+        self._settings.last_export_path = selection.output_path
+        self._settings.export_dialog_size = dialog.size()
         if selection.output_path:
             self._settings.last_export_dir = str(Path(selection.output_path).parent)
         QMessageBox.information(

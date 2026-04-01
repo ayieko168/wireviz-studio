@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Iterable
 
 from PySide6.QtCore import QByteArray, Qt
-from PySide6.QtGui import QPainter
+from PySide6.QtGui import QColor, QBrush, QPainter
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QGraphicsSvgItem
 from PySide6.QtWidgets import (
@@ -31,6 +31,7 @@ class DiagramView(QGraphicsView):
 		self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
 		self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
 		self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+		self.setBackgroundBrush(QBrush(QColor("#ffffff")))
 		self._zoom = 1.0
 		self._svg_renderer: QSvgRenderer | None = None
 
@@ -60,6 +61,7 @@ class PreviewPanel(QWidget):
 		super().__init__(parent)
 
 		self.tabs = QTabWidget(self)
+		self.tabs.setObjectName("preview_tabs")
 
 		self.diagram_view = DiagramView(self)
 		self.fit_button = QPushButton("Fit", self)
@@ -71,9 +73,12 @@ class PreviewPanel(QWidget):
 		diagram_layout.addWidget(self.fit_button, alignment=Qt.AlignmentFlag.AlignRight)
 
 		self.bom_table = QTableWidget(self)
+		self.bom_table.setObjectName("bom_table")
 		self.bom_table.setSortingEnabled(True)
 		self.bom_table.setAlternatingRowColors(True)
-		self.bom_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+		self.bom_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+		self.bom_table.horizontalHeader().setStretchLastSection(False)
+		self.bom_table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
 		self.tabs.addTab(diagram_container, "Diagram")
 		self.tabs.addTab(self.bom_table, "BOM")

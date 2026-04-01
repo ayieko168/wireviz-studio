@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import List
 
-from PySide6.QtCore import QByteArray, QSettings
+from PySide6.QtCore import QByteArray, QSettings, QSize
 
 
 class AppSettings:
@@ -74,6 +74,31 @@ class AppSettings:
 	@last_export_format.setter
 	def last_export_format(self, value: str) -> None:
 		self._settings.setValue("export/last_format", value)
+
+	@property
+	def last_export_path(self) -> str:
+		return str(self._settings.value("export/last_path", ""))
+
+	@last_export_path.setter
+	def last_export_path(self, value: str) -> None:
+		self._settings.setValue("export/last_path", value)
+
+	@property
+	def last_export_pdf_mode(self) -> str:
+		return str(self._settings.value("export/last_pdf_mode", "diagram"))
+
+	@last_export_pdf_mode.setter
+	def last_export_pdf_mode(self, value: str) -> None:
+		self._settings.setValue("export/last_pdf_mode", value)
+
+	@property
+	def export_dialog_size(self) -> QSize | None:
+		value = self._settings.value("export/dialog_size")
+		return value if isinstance(value, QSize) else None
+
+	@export_dialog_size.setter
+	def export_dialog_size(self, value: QSize) -> None:
+		self._settings.setValue("export/dialog_size", value)
 
 	def sync(self) -> None:
 		self._settings.sync()

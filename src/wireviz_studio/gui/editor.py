@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QRect, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QTextFormat
-from PySide6.QtWidgets import QPlainTextEdit, QTabWidget, QTextEdit, QWidget
+from PySide6.QtWidgets import QPlainTextEdit, QTabBar, QTabWidget, QTextEdit, QToolButton, QWidget
 
 from wireviz_studio.gui.highlighter import YamlHighlighter
 
@@ -68,7 +68,16 @@ class CodeEditor(QPlainTextEdit):
 
 	def paint_line_numbers(self, event) -> None:
 		painter = QPainter(self._line_number_area)
-		painter.fillRect(event.rect(), QColor("#f1f3f5"))
+		palette = self.palette()
+		base = palette.base().color()
+		if base.lightness() < 128:
+			gutter_bg = QColor("#252526")
+			number_fg = QColor("#858585")
+		else:
+			gutter_bg = QColor("#f3f3f3")
+			number_fg = QColor("#8a8a8a")
+
+		painter.fillRect(event.rect(), gutter_bg)
 
 		block = self.firstVisibleBlock()
 		block_number = block.blockNumber()
@@ -78,7 +87,7 @@ class CodeEditor(QPlainTextEdit):
 		while block.isValid() and top <= event.rect().bottom():
 			if block.isVisible() and bottom >= event.rect().top():
 				number_text = str(block_number + 1)
-				painter.setPen(QColor("#6c757d"))
+				painter.setPen(number_fg)
 				painter.drawText(
 					0,
 					int(top),
@@ -99,7 +108,12 @@ class CodeEditor(QPlainTextEdit):
 			return
 
 		selection = QTextEdit.ExtraSelection()
-		selection.format.setBackground(QColor("#fff7d6"))
+		base = self.palette().base().color()
+		if base.lightness() < 128:
+			line_bg = QColor("#2a2d2e")
+		else:
+			line_bg = QColor("#f5f9ff")
+		selection.format.setBackground(line_bg)
 		selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
 		selection.cursor = self.textCursor()
 		selection.cursor.clearSelection()
@@ -112,10 +126,35 @@ class EditorTabs(QTabWidget):
 
 	def __init__(self, parent=None) -> None:
 		super().__init__(parent)
+		self.setObjectName("editor_tabs")
 		self.setTabsClosable(True)
 		self.setMovable(True)
 		self.tabCloseRequested.connect(self.close_tab)
 		self.currentChanged.connect(self._on_current_changed)
+
+	def _make_close_button(self) -> QToolButton:
+		button = QToolButton(self)
+		button.setObjectName("editor_tab_close")
+		button.setText("×")
+		button.setToolTip("Close tab")
+		button.setAutoRaise(True)
+		button.setCursor(Qt.CursorShape.PointingHandCursor)
+		button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+		button.setFixedSize(18, 18)
+		button.clicked.connect(lambda _checked=False, b=button: self._close_by_button(b))
+		return button
+
+	def _install_close_button(self, index: int) -> None:
+		if index < 0:
+			return
+		button = self._make_close_button()
+		self.tabBar().setTabButton(index, QTabBar.ButtonPosition.RightSide, button)
+
+	def _close_by_button(self, button: QToolButton) -> None:
+		for index in range(self.count()):
+			if self.tabBar().tabButton(index, QTabBar.ButtonPosition.RightSide) is button:
+				self.close_tab(index)
+				return
 
 	def new_tab(self, text: str = "", file_path: Path | None = None) -> int:
 		editor = CodeEditor(self)
@@ -128,6 +167,7 @@ class EditorTabs(QTabWidget):
 
 		title = file_path.name if file_path else "untitled.yml"
 		index = self.addTab(editor, title)
+		self._install_close_button(index)
 		self.setCurrentIndex(index)
 		self._refresh_tab_title(index)
 		self._on_current_changed(index)

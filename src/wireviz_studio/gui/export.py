@@ -27,9 +27,16 @@ class ExportSelection:
 
 
 class ExportDialog(QDialog):
-	def __init__(self, parent=None, default_path: str = "", default_format: str = "SVG") -> None:
+	def __init__(
+		self,
+		parent=None,
+		default_path: str = "",
+		default_format: str = "SVG",
+		default_pdf_mode: str = "diagram",
+	) -> None:
 		super().__init__(parent)
 		self.setWindowTitle("Export")
+		self.resize(680, 360)
 
 		self.format_combo = QComboBox(self)
 		self.format_combo.addItems(["PNG", "SVG", "PDF", "CSV"])
@@ -48,7 +55,12 @@ class ExportDialog(QDialog):
 		self.pdf_diagram = QRadioButton("Diagram only", self.pdf_group)
 		self.pdf_bom = QRadioButton("BOM only", self.pdf_group)
 		self.pdf_both = QRadioButton("Diagram + BOM", self.pdf_group)
-		self.pdf_diagram.setChecked(True)
+		if default_pdf_mode == "bom":
+			self.pdf_bom.setChecked(True)
+		elif default_pdf_mode == "both":
+			self.pdf_both.setChecked(True)
+		else:
+			self.pdf_diagram.setChecked(True)
 		pdf_layout.addWidget(self.pdf_diagram)
 		pdf_layout.addWidget(self.pdf_bom)
 		pdf_layout.addWidget(self.pdf_both)
